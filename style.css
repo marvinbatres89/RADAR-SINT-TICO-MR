@@ -1,0 +1,68 @@
+:root{font-family:Inter,system-ui,sans-serif;--bg:#07101d;--panel:#0b1726;--panel2:#10243a;--text:#eef4ff;--muted:#91a9c3;--line:#203852;--blue:#1687ff;--green:#20c979;--red:#ff4f64;--yellow:#ffc928}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);min-height:100vh}body.light{--bg:#edf5fb;--panel:#fff;--panel2:#eef6fc;--text:#102030;--muted:#60758b;--line:#cfe0ec}.topbar{height:70px;display:flex;align-items:center;gap:22px;padding:10px 2vw;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:20}.brand{display:flex;flex-direction:column;min-width:240px}.brand b{font-size:18px}.brand small{color:var(--muted)}nav{display:flex;gap:6px;flex:1}.nav,button,select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-weight:800}.nav.active,.primary,.tf.active{background:var(--blue);color:white;border-color:var(--blue)}button{cursor:pointer}.top-actions{display:flex;align-items:center;gap:8px}.pill{padding:8px 10px;border-radius:999px;font-size:11px;font-weight:900}.off{background:#5a1c25}.on{background:#12613e}.view{display:none}.view.active{display:block}#radarView,#historyView{width:min(1350px,95vw);margin:18px auto}.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 12px 35px #0003}.controls{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:14px}.radar-grid{display:grid;grid-template-columns:minmax(300px,.8fr) minmax(0,1.4fr);gap:14px}.signal-card{border-color:#1f9e68}.big-signal{font-size:clamp(25px,4vw,44px);font-weight:950;color:var(--green);margin:10px 0}.signal-kpis,.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.stats{grid-template-columns:repeat(3,1fr)}.signal-kpis div,.stats div,.levels div,.mini-levels div{background:var(--panel2);padding:10px;border-radius:10px}.signal-kpis small,.stats small{display:block;color:var(--muted)}.signal-kpis b,.stats b{font-size:20px}.levels{display:grid;gap:7px}.levels div,.mini-levels div{display:flex;justify-content:space-between}.mono{line-height:1.8;color:var(--muted)}.terminal.active{display:flex;flex-direction:column;height:calc(100vh - 70px);overflow:hidden}.terminal-toolbar{min-height:62px;display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--panel);border-bottom:1px solid var(--line)}.market-select{display:flex;align-items:center;gap:10px}.market-select select{min-width:190px}.market-select b{color:var(--green)}.timeframes,.chart-tools{display:flex;gap:5px;flex-wrap:wrap}.timeframes{flex:1}.tf{padding:8px 10px}.terminal-body{display:grid;grid-template-columns:260px minmax(0,1fr) 220px;min-height:0;flex:1}.trade-panel,.market-info{background:var(--panel);padding:14px;border-right:1px solid var(--line);overflow:auto}.market-info{border-right:0;border-left:1px solid var(--line)}.trade-panel h2{font-size:27px;color:var(--green);margin:8px 0}.trade-kpi,.market-info div{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}.mini-levels{display:grid;gap:6px;margin:10px 0}.trade-buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}.trade-buttons button{color:white}.buy{background:#0aa55e}.sell{background:#e94254}.stop{background:#e98213}.profit{background:#087fea}.trade-buttons .reentry{grid-column:1/-1}.demo-note{display:block;color:var(--muted);margin-top:8px;text-align:center}.chart-stage{position:relative;min-width:0;min-height:0;background:#07111d}.chart-stage canvas{width:100%;height:100%;display:block}.chart-badge{position:absolute;left:12px;top:10px;background:#0b1726cc;border:1px solid #203852;border-radius:8px;padding:6px 9px;color:#a9bad0;font-size:12px}.market-info h3{font-size:13px}.market-info b{margin-left:8px}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--muted)}.panel-hidden .trade-panel{display:none}.panel-hidden{grid-template-columns:minmax(0,1fr) 220px}@media(max-width:900px){.topbar{height:auto;min-height:64px;flex-wrap:wrap}.brand{min-width:180px;flex:1}.brand small{display:none}nav{order:3;width:100%;flex-basis:100%}.nav{flex:1}.top-actions .pill{display:none}.terminal.active{height:calc(100vh - 112px)}.terminal-toolbar{overflow-x:auto;flex-wrap:nowrap}.market-select select{min-width:160px}.chart-tools button:not(#togglePanel){display:none}.terminal-body{grid-template-columns:minmax(0,1fr)}.trade-panel,.market-info{display:none}.chart-stage{grid-column:1}.radar-grid{grid-template-columns:1fr}.panel-hidden{grid-template-columns:1fr}}@media(orientation:landscape) and (max-height:600px){.topbar{min-height:52px;height:52px;flex-wrap:nowrap}.brand small{display:none}nav{order:initial;width:auto;flex-basis:auto}.terminal.active{height:calc(100vh - 52px)}.terminal-toolbar{min-height:48px;padding:4px 8px}.terminal-body{grid-template-columns:220px minmax(0,1fr)}.trade-panel{display:block;padding:9px}.market-info{display:none}.trade-panel p,.mini-levels,.demo-note{font-size:11px}.trade-panel h2{font-size:20px}.trade-buttons button{padding:7px}.panel-hidden{grid-template-columns:1fr}.panel-hidden .trade-panel{display:none}}
+
+/* ===== V1.4.2 · TERMINAL GRÁFICO A PANTALLA COMPLETA ===== */
+.graph-full-header{display:none}
+body.graph-mode{overflow:hidden}
+body.graph-mode .topbar{display:none}
+body.graph-mode main{height:100vh}
+body.graph-mode #graphView.terminal.active{height:100vh;width:100vw;margin:0;position:fixed;inset:0;z-index:100;background:var(--bg)}
+body.graph-mode .graph-full-header{height:48px;display:flex;align-items:center;gap:12px;padding:5px 10px;background:var(--panel);border-bottom:1px solid var(--line);flex:0 0 auto}
+.graph-full-header strong{font-size:14px;white-space:nowrap}.graph-live{margin-left:auto;color:var(--green);font-size:12px;font-weight:900}.back-radar{padding:7px 10px}
+body.graph-mode .terminal-toolbar{min-height:54px;flex:0 0 auto;padding:5px 8px;gap:8px}
+body.graph-mode .terminal-body{position:relative;display:block;flex:1;min-height:0}
+body.graph-mode .chart-stage{position:absolute;inset:0;width:100%;height:100%;background:var(--bg)}
+body.graph-mode .market-info{position:absolute;right:8px;top:8px;width:190px;max-height:calc(100% - 16px);z-index:5;border:1px solid var(--line);border-radius:10px;background:color-mix(in srgb,var(--panel) 90%,transparent);box-shadow:0 8px 30px #0004;padding:10px}
+body.graph-mode .trade-panel{display:block;position:absolute;left:8px;top:8px;bottom:8px;width:min(290px,88vw);z-index:12;border:1px solid var(--line);border-radius:12px;background:var(--panel);box-shadow:0 15px 45px #0008;transform:translateX(calc(-100% - 18px));transition:transform .2s ease;padding:14px;overflow:auto}
+body.graph-mode .terminal-body.panel-open .trade-panel{transform:translateX(0)}
+.close-panel{position:absolute;right:8px;top:8px;width:34px;height:34px;padding:0;font-size:22px}
+.panel-backdrop{display:none;position:absolute;inset:0;background:#0007;z-index:11}
+body.graph-mode .terminal-body.panel-open .panel-backdrop{display:block}
+body.light.graph-mode .chart-stage{background:#f7fbff}
+@media(max-width:900px){
+ body.graph-mode .graph-full-header{height:42px}.graph-full-header strong{font-size:12px}
+ body.graph-mode .terminal-toolbar{min-height:50px;overflow-x:auto;white-space:nowrap}
+ body.graph-mode .market-select select{min-width:145px;padding:7px}.market-select b{font-size:12px}
+ body.graph-mode .tf{padding:7px 9px}.chart-tools{flex-wrap:nowrap}.chart-tools button{display:inline-block!important;padding:7px 9px}
+ body.graph-mode .market-info{display:none}
+ body.graph-mode .chart-badge{top:7px;left:7px}
+}
+@media(orientation:landscape) and (max-height:600px){
+ body.graph-mode .graph-full-header{height:38px}.graph-full-header strong{display:none}
+ body.graph-mode .terminal-toolbar{min-height:42px;padding:3px 6px}
+ body.graph-mode .trade-panel{display:block;width:260px;top:5px;bottom:5px}
+}
+
+/* ===== V1.4.3 · RESPONSIVE + HISTÓRICO DE VELAS ===== */
+body.graph-mode .terminal-toolbar{display:grid;grid-template-columns:minmax(180px,auto) minmax(330px,1fr) auto;align-items:center}
+body.graph-mode .timeframes{display:flex;justify-content:center;flex-wrap:nowrap;min-width:0}
+body.graph-mode .chart-tools{display:flex;justify-content:flex-end;flex-wrap:nowrap}
+body.graph-mode .chart-stage{overflow:hidden}
+body.graph-mode .chart-stage canvas{touch-action:pan-y;width:100%!important;height:100%!important}
+
+@media(max-width:900px) and (orientation:portrait){
+ body.graph-mode .graph-full-header{height:40px}
+ body.graph-mode .terminal-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"market tools" "times times";height:auto;min-height:92px;padding:5px 7px;overflow:visible;gap:5px}
+ body.graph-mode .market-select{grid-area:market;min-width:0;overflow:hidden}
+ body.graph-mode .market-select select{min-width:0;width:min(48vw,190px);padding:7px 6px}
+ body.graph-mode .market-select b{font-size:11px;white-space:nowrap}
+ body.graph-mode .timeframes{grid-area:times;width:100%;display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+ body.graph-mode .tf{min-width:0;padding:7px 2px;font-size:11px}
+ body.graph-mode .chart-tools{grid-area:tools;gap:3px}
+ body.graph-mode .chart-tools button{display:none!important}
+ body.graph-mode .chart-tools #togglePanel,body.graph-mode .chart-tools #graphTheme{display:inline-block!important;padding:7px 8px;font-size:11px}
+ body.graph-mode .terminal-body{min-height:0}
+ body.graph-mode .chart-stage{inset:0}
+ body.graph-mode .chart-badge{font-size:10px;padding:4px 6px;max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+
+@media(max-width:900px) and (orientation:landscape){
+ body.graph-mode .graph-full-header{height:36px}
+ body.graph-mode .terminal-toolbar{display:grid;grid-template-columns:minmax(155px,210px) minmax(300px,1fr) auto;min-height:42px;height:42px;padding:3px 6px;gap:5px;overflow:hidden}
+ body.graph-mode .market-select select{min-width:0;width:145px;padding:5px}
+ body.graph-mode .market-select b{font-size:10px}
+ body.graph-mode .timeframes{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+ body.graph-mode .tf{padding:5px 2px;font-size:10px}
+ body.graph-mode .chart-tools button{display:none!important}
+ body.graph-mode .chart-tools #togglePanel,body.graph-mode .chart-tools #graphTheme{display:inline-block!important;padding:5px 7px;font-size:10px}
+ body.graph-mode .chart-badge{font-size:10px;padding:3px 5px}
+}
