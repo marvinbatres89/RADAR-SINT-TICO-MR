@@ -1,0 +1,118 @@
+const $=id=>document.getElementById(id); const S={ws:null,historyWs:null,symbol:null,prices:[],times:[],candles:[],voice:true,signal:null,lastLogged:'',timeframe:60,candleReq:20,candleRequestId:null,historyStatus:'SIN CARGAR'};
+const els={symbol:$('symbol'),connect:$('connect'),conn:$('conn'),price:$('price'),ticks:$('ticks'),direction:$('direction'),confidence:$('confidence'),phase:$('phase'),reason:$('reason'),alert:$('alertLevel'),entry:$('entryLevel'),exit:$('exitLevel'),spike:$('spikeRisk'),ind:$('indicators'),history:$('history'),chart:$('chart')};
+function syncUI(){const s=S.signal||{};const set=(id,v)=>{const e=$(id);if(e)e.textContent=v};set('radarDir',s.dir||'ESPERANDO');set('graphDir',s.dir||'ESPERANDO');set('graphConf',(s.conf||0)+'%');set('graphPhase',s.phase||'ESPERANDO');set('graphReason',els.reason.textContent);set('graphTarget',s.exit?.toFixed(5)||'—');set('graphSpike',(s.spikeRisk||0)+'%');set('graphPrice',els.price.textContent);set('infoPrice',els.price.textContent);set('infoTicks',els.ticks.textContent);set('infoDir',s.dir||'NEUTRAL');set('infoAlert',s.alert?.toFixed(5)||'—');set('infoEntry',s.entry?.toFixed(5)||'—');set('infoExit',s.exit?.toFixed(5)||'—');set('graphConn',S.ws?.readyState===1?'● DERIV EN VIVO':'● DERIV')}
+function speak(t){if(!S.voice||!('speechSynthesis'in window))return; speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='es-SV';u.rate=.95;speechSynthesis.speak(u)}
+function send(o){if(S.ws?.readyState===1)S.ws.send(JSON.stringify(o))}
+function connect(){if(S.ws)S.ws.close();S.ws=new WebSocket('wss://api.derivws.com/trading/v1/options/ws/public');els.conn.textContent='CONECTANDO…';S.ws.onopen=()=>{els.conn.textContent='DERIV CONECTADO';els.conn.className='pill on';send({active_symbols:'brief',req_id:1});speak('Radar Sintético MR conectado a Deriv')};S.ws.onclose=e=>{els.conn.textContent='DERIV DESCONECTADO';els.conn.className='pill off';els.reason.textContent=`Conexión cerrada${e.code?` (código ${e.code})`:''}. Pulse Conectar Deriv para reintentar.`};S.ws.onerror=()=>{els.conn.textContent='ERROR DERIV';els.conn.className='pill off';els.reason.textContent='No se pudo abrir el canal público de Deriv. Revise Internet y vuelva a intentar.'};S.ws.onmessage=e=>handle(JSON.parse(e.data))}
+function handle(d){if(d.error){els.reason.textContent=d.error.message;if(d.req_id===S.candleRequestId){S.historyStatus='ERROR: '+d.error.message;updateChartBadge()}return}if(d.msg_type==='active_symbols'){const list=(d.active_symbols||[]).filter(x=>/boom|crash/i.test(x.underlying_symbol_name||x.display_name||''));els.symbol.innerHTML='';list.forEach(x=>{let o=document.createElement('option');o.value=x.underlying_symbol||x.symbol;o.textContent=x.underlying_symbol_name||x.display_name||o.value;els.symbol.appendChild(o)});if(list.length){S.symbol=els.symbol.value;subscribe()}}if(d.msg_type==='history'&&d.history){S.prices=(d.history.prices||[]).map(Number);S.times=d.history.times||[];analyze()}if(d.msg_type==='candles'&&Array.isArray(d.candles)){acceptCandles(d.candles,'principal')}if(d.msg_type==='tick'){const q=Number(d.tick.quote),ep=Number(d.tick.epoch);S.prices.push(q);S.times.push(ep);if(S.prices.length>600){S.prices.shift();S.times.shift()}updateLiveCandle(q,ep);analyze()}}
+function normalizeCandles(list){return (list||[]).map(c=>({t:Number(c.epoch),o:Number(c.open),h:Number(c.high),l:Number(c.low),c:Number(c.close)})).filter(c=>[c.t,c.o,c.h,c.l,c.c].every(Number.isFinite)).sort((a,b)=>a.t-b.t).slice(-200)}
+function acceptCandles(list,source='Deriv'){const cs=normalizeCandles(list);if(!cs.length)return false;S.candles=cs;S.historyStatus=`${cs.length} recibidas / ${cs.length} cargadas`;updateChartBadge();draw();return true}
+function requestCandles(){
+  if(!S.symbol)return;
+  S.candles=[];S.candleRequestId=++S.candleReq;S.historyStatus='SOLICITANDO';updateChartBadge('Histórico: solicitando 200 velas…');draw();
+  const req={ticks_history:S.symbol,count:200,end:'latest',style:'candles',granularity:S.timeframe,subscribe:0,req_id:S.candleRequestId};
+  // Primero usa el canal público moderno ya conectado.
+  if(S.ws?.readyState===1)S.ws.send(JSON.stringify(req));
+  // Respaldo: canal de datos de mercado documentado por Deriv para ticks_history.
+  // Se usa solo para histórico; los ticks en vivo continúan por el canal principal.
+  try{if(S.historyWs)S.historyWs.close()}catch(_){ }
+  try{
+    const hws=new WebSocket('wss://ws.binaryws.com/websockets/v3');S.historyWs=hws;
+    hws.onopen=()=>hws.send(JSON.stringify(req));
+    hws.onmessage=e=>{let d;try{d=JSON.parse(e.data)}catch(_){return}if(d.error){S.historyStatus='ERROR: '+d.error.message;updateChartBadge();return}if(d.msg_type==='candles'&&Array.isArray(d.candles)){if(acceptCandles(d.candles,'histórico')){try{hws.close()}catch(_){}}}};
+    hws.onerror=()=>{if(!S.candles.length){S.historyStatus='CANAL HISTÓRICO SIN RESPUESTA';updateChartBadge()}};
+  }catch(_){ }
+  setTimeout(()=>{if(!S.candles.length){S.historyStatus='0 recibidas / 0 cargadas';updateChartBadge('Histórico: 0 recibidas / 0 cargadas · reintentar');}},5000)
+}
+function updateChartBadge(text){const e=$('chartBadge');if(!e)return;const tf=document.querySelector('.tf.active')?.textContent||'1m';e.textContent=text||`${tf} · ${S.candles.length} velas · en vivo · Histórico: ${S.historyStatus}`}
+function subscribe(){if(!S.symbol)return;send({forget_all:'ticks'});S.prices=[];S.times=[];S.candles=[];send({ticks_history:S.symbol,count:300,end:'latest',style:'ticks',req_id:2});requestCandles();send({ticks:S.symbol,subscribe:1,req_id:3});els.reason.textContent='Recopilando datos del mercado…'}
+function updateLiveCandle(price,epoch){if(!Number.isFinite(price)||!epoch)return;const bucket=Math.floor(epoch/S.timeframe)*S.timeframe;let c=S.candles[S.candles.length-1];if(!c||c.t<bucket){S.candles.push({t:bucket,o:price,h:price,l:price,c:price});if(S.candles.length>200)S.candles.shift()}else if(c.t===bucket){c.h=Math.max(c.h,price);c.l=Math.min(c.l,price);c.c=price}}
+const avg=a=>a.reduce((s,v)=>s+v,0)/(a.length||1); const sd=a=>{let m=avg(a);return Math.sqrt(avg(a.map(v=>(v-m)**2)))};function ema(a,n){if(!a.length)return 0;let k=2/(n+1),v=a[0];for(let x of a.slice(1))v=x*k+v*(1-k);return v}
+function analyze(){let p=S.prices,n=p.length;if(n<40){els.ticks.textContent=n;syncUI();draw();return}let cur=p[n-1],r=p.slice(-40),fast=ema(r.slice(-15),8),slow=ema(r,21),mom=(cur-p[n-11]),vol=sd(r.slice(-25)),unit=vol||Math.abs(cur)*.00001||1;let score=(fast-slow)/unit*.22+mom/unit*.12;let conf=Math.min(92,Math.round(50+Math.abs(score)*18));let dir=score>.35?'ALZA ↑':score<-.35?'BAJA ↓':'NEUTRAL';let deltas=r.slice(1).map((v,i)=>v-r[i]),largest=Math.max(...deltas.map(Math.abs)),spikeRisk=Math.min(95,Math.round(20+Math.max(0,(largest/(unit||1)-1))*10+Math.min(35,Math.abs(score)*8)));let phase='ESPERAR',reason='Sin confirmación suficiente.',alert=null,entry=null,exit=null;if(dir!=='NEUTRAL'&&conf>=62){phase='🟡 ALERTA';alert=cur;reason='Dirección emergente detectada. Vigilando confirmación.'}if(dir!=='NEUTRAL'&&conf>=72){phase='🟢 ENTRADA';entry=cur;alert=S.signal?.alert??cur;exit=cur+(dir.startsWith('ALZA')?1:-1)*unit*2.2;reason='Momentum y estructura confirman la dirección.'}S.signal={dir,conf,phase,alert,entry,exit,spikeRisk};els.price.textContent=cur.toFixed(5);els.ticks.textContent=n;els.direction.textContent=dir;els.confidence.textContent=conf+'%';els.phase.textContent=phase;els.reason.textContent=reason;els.alert.textContent=alert?.toFixed(5)||'—';els.entry.textContent=entry?.toFixed(5)||'—';els.exit.textContent=exit?.toFixed(5)||'—';els.spike.textContent=spikeRisk+'%';els.ind.innerHTML=`Momentum: ${mom.toFixed(5)}<br>Volatilidad: ${vol.toFixed(5)}<br>EMA rápida/lenta: ${fast.toFixed(5)} / ${slow.toFixed(5)}`;syncUI();let key=phase+dir;if((phase.includes('ALERTA')||phase.includes('ENTRADA'))&&key!==S.lastLogged){S.lastLogged=key;logSignal();speak(`${phase.includes('ENTRADA')?'Entrada confirmada':'Alerta'} ${dir.startsWith('ALZA')?'al alza':'a la baja'} en ${els.symbol.options[els.symbol.selectedIndex]?.text||S.symbol}`)}draw()}
+function logSignal(){let s=S.signal,tr=document.createElement('tr');tr.innerHTML=`<td>${new Date().toLocaleTimeString()}</td><td>${els.symbol.options[els.symbol.selectedIndex]?.text||S.symbol}</td><td>${s.dir}</td><td>${s.phase}</td><td>${s.conf}%</td><td>${s.alert?.toFixed(5)||'—'}</td><td>${s.entry?.toFixed(5)||'—'}</td><td>${s.exit?.toFixed(5)||'—'}</td>`;els.history.prepend(tr);while(els.history.children.length>30)els.history.lastChild.remove()}
+function candlesFromTicks(){
+  if(S.candles.length)return S.candles.slice(-160);
+  const out=[]; const sec=S.timeframe;
+  for(let i=0;i<S.prices.length;i++){
+    const price=Number(S.prices[i]), epoch=Number(S.times[i]||0); if(!Number.isFinite(price)||!epoch)continue;
+    const bucket=Math.floor(epoch/sec)*sec; let c=out[out.length-1];
+    if(!c||c.t!==bucket){c={t:bucket,o:price,h:price,l:price,c:price};out.push(c)}
+    else{c.h=Math.max(c.h,price);c.l=Math.min(c.l,price);c.c=price}
+  }
+  return out.slice(-160)
+}
+function fitCanvas(){let c=els.chart,dpr=Math.max(1,window.devicePixelRatio||1),r=c.getBoundingClientRect(),w=Math.max(320,Math.round(r.width)),h=Math.max(260,Math.round(r.height));if(c.width!==Math.round(w*dpr)||c.height!==Math.round(h*dpr)){c.width=Math.round(w*dpr);c.height=Math.round(h*dpr)}let ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);return{ctx,w,h}}
+function draw(){
+  const {ctx,w,h}=fitCanvas(),cs=candlesFromTicks();ctx.clearRect(0,0,w,h);const light=document.body.classList.contains('light');ctx.fillStyle=light?'#f7fbff':'#07111d';ctx.fillRect(0,0,w,h);if(!cs.length)return;
+  const left=12,right=72,top=16,bottom=32,pw=w-left-right,ph=h-top-bottom;
+  let min=Math.min(...cs.map(c=>c.l)),max=Math.max(...cs.map(c=>c.h));let pad=(max-min)*.12||Math.abs(max)*.00002||1;min-=pad;max+=pad;
+  const Y=v=>top+(max-v)/(max-min)*ph;
+  ctx.lineWidth=1;ctx.strokeStyle=light?'#d8e5ef':'#173049';ctx.fillStyle=light?'#60758b':'#7890a9';ctx.font='11px system-ui';ctx.textAlign='left';
+  for(let i=0;i<=5;i++){let y=top+ph*i/5,val=max-(max-min)*i/5;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(w-right,y);ctx.stroke();ctx.fillText(val.toFixed(5),w-right+7,y+4)}
+  const slot=pw/Math.max(cs.length,1),body=Math.max(2,Math.min(12,slot*.62));
+  cs.forEach((c,i)=>{let x=left+slot*(i+.5),yo=Y(c.o),yc=Y(c.c),yh=Y(c.h),yl=Y(c.l),up=c.c>=c.o,col=up?'#43e58f':'#ff4f64';ctx.strokeStyle=col;ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(x,yh);ctx.lineTo(x,yl);ctx.stroke();let y=Math.min(yo,yc),bh=Math.max(2,Math.abs(yc-yo));ctx.fillRect(x-body/2,y,body,bh)});
+  ctx.fillStyle=light?'#60758b':'#7890a9';ctx.textAlign='center';let step=Math.max(1,Math.ceil(cs.length/5));for(let i=0;i<cs.length;i+=step){let x=left+slot*(i+.5),d=new Date(cs[i].t*1000),label=S.timeframe>=86400?d.toLocaleDateString([], {month:'short',day:'numeric'}):d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});ctx.fillText(label,x,h-10)}
+  let sig=S.signal||{};[[sig.alert,'#ffd54a','ALERTA'],[sig.entry,'#43e58f','ENTRADA'],[sig.exit,'#ff6476','SALIDA']].forEach(([v,col,label])=>{if(v==null||v<min||v>max)return;let y=Y(v);ctx.strokeStyle=col;ctx.setLineDash([8,6]);ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(w-right,y);ctx.stroke();ctx.setLineDash([]);ctx.fillStyle=col;ctx.textAlign='left';ctx.font='bold 12px system-ui';ctx.fillText(label+' '+Number(v).toFixed(5),left+6,Math.max(14,y-6))});
+}
+els.connect.onclick=connect;els.symbol.onchange=()=>{S.symbol=els.symbol.value;S.signal=null;S.lastLogged='';subscribe()};$('voice').onclick=()=>{S.voice=!S.voice;$('voice').textContent=`🔊 Voz: ${S.voice?'ON':'OFF'}`};$('clear').onclick=()=>{S.signal=null;S.lastLogged='';draw()};document.querySelectorAll('.tf').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tf').forEach(x=>x.classList.remove('active'));b.classList.add('active');S.timeframe=Number(b.dataset.sec);updateChartBadge('Cargando histórico…');requestCandles()});window.addEventListener('resize',draw);
+
+function showView(name){document.body.classList.toggle('graph-mode',name==='graph');document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.nav').forEach(b=>b.classList.toggle('active',b.dataset.view===name));$(name+'View').classList.add('active');document.querySelector('.terminal-body')?.classList.remove('panel-open');if(name==='graph'){setTimeout(()=>{updateChartBadge();draw()},100)}}document.querySelectorAll('.nav').forEach(b=>b.onclick=()=>showView(b.dataset.view));$('openGraph').onclick=()=>showView('graph');$('theme').onclick=()=>{document.body.classList.toggle('light');$('theme').textContent=document.body.classList.contains('light')?'🌙 Oscuro':'☀️ Claro';draw()};$('togglePanel').onclick=()=>document.querySelector('.terminal-body').classList.toggle('panel-open');$('closePanel').onclick=()=>document.querySelector('.terminal-body').classList.remove('panel-open');$('panelBackdrop').onclick=()=>document.querySelector('.terminal-body').classList.remove('panel-open');$('backRadar').onclick=()=>showView('radar');$('graphTheme').onclick=()=>{$('theme').click()};$('graphSymbol').onchange=()=>{els.symbol.value=$('graphSymbol').value;S.symbol=els.symbol.value;subscribe()};const oldHandle=handle;handle=function(d){oldHandle(d);if(d.msg_type==='active_symbols'){ $('graphSymbol').innerHTML=els.symbol.innerHTML;$('graphSymbol').value=els.symbol.value } syncUI()};
+
+/* V1.4.5 — motor gráfico interactivo: zoom/pan + respaldo histórico por ticks */
+S.zoom=70; S.pan=0; S.dragX=null; S.pinchDist=null; S.fallbackReq=9000;
+function requestHistoryFallback(){
+  if(!S.symbol||S.ws?.readyState!==1)return;
+  const id=++S.fallbackReq;
+  S.ws.send(JSON.stringify({ticks_history:S.symbol,count:5000,end:'latest',style:'ticks',req_id:id}));
+  S._fallbackId=id;
+}
+const handle145=handle;
+handle=function(d){
+  if(d.error && d.req_id===S.candleRequestId){
+    S.historyStatus='VELAS API: '+d.error.message+' · usando ticks'; updateChartBadge(); requestHistoryFallback(); return;
+  }
+  if(d.msg_type==='history' && d.req_id===S._fallbackId && d.history){
+    const pp=(d.history.prices||[]).map(Number), tt=(d.history.times||[]).map(Number), out=[];
+    for(let i=0;i<pp.length;i++){
+      const price=pp[i], epoch=tt[i]; if(!Number.isFinite(price)||!epoch)continue;
+      const bucket=Math.floor(epoch/S.timeframe)*S.timeframe; let c=out[out.length-1];
+      if(!c||c.t!==bucket){c={t:bucket,o:price,h:price,l:price,c:price};out.push(c)}else{c.h=Math.max(c.h,price);c.l=Math.min(c.l,price);c.c=price}
+    }
+    if(out.length){S.candles=out.slice(-300);S.historyStatus=`${pp.length} ticks → ${S.candles.length} velas`;updateChartBadge();draw();}
+  }
+  handle145(d);
+};
+const requestCandles145=requestCandles;
+requestCandles=function(){requestCandles145();setTimeout(()=>{if(S.candles.length<3)requestHistoryFallback()},2200)};
+const candlesFromTicks145=candlesFromTicks;
+candlesFromTicks=function(){
+  const all=S.candles.length?S.candles:candlesFromTicks145(); if(!all.length)return [];
+  const visible=Math.max(18,Math.min(all.length,Math.round(S.zoom||70)));
+  const maxPan=Math.max(0,all.length-visible); S.pan=Math.max(0,Math.min(maxPan,S.pan||0));
+  const end=all.length-Math.round(S.pan); const start=Math.max(0,end-visible); return all.slice(start,end);
+};
+function installChartGestures(){
+ const c=els.chart;if(!c)return;c.style.touchAction='none';
+ c.addEventListener('wheel',e=>{e.preventDefault();S.zoom=Math.max(18,Math.min(200,S.zoom+(e.deltaY>0?8:-8)));draw()},{passive:false});
+ c.addEventListener('pointerdown',e=>{c.setPointerCapture?.(e.pointerId);S.dragX=e.clientX});
+ c.addEventListener('pointermove',e=>{if(S.dragX==null)return;let dx=e.clientX-S.dragX;if(Math.abs(dx)>6){S.pan=Math.max(0,(S.pan||0)-Math.sign(dx)*3);S.dragX=e.clientX;draw()}});
+ c.addEventListener('pointerup',()=>S.dragX=null);c.addEventListener('pointercancel',()=>S.dragX=null);
+ let touches=[];
+ c.addEventListener('touchstart',e=>{if(e.touches.length===2){S.pinchDist=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY)}},{passive:true});
+ c.addEventListener('touchmove',e=>{if(e.touches.length===2&&S.pinchDist){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);if(Math.abs(d-S.pinchDist)>10){S.zoom=Math.max(18,Math.min(200,S.zoom+(d>S.pinchDist?-8:8)));S.pinchDist=d;draw()}}},{passive:true});
+ c.addEventListener('touchend',()=>S.pinchDist=null,{passive:true});
+}
+installChartGestures();
+
+
+/* V1.4.6 — escala profesional, controles de zoom y pan táctil estable */
+S.zoom=Math.max(36,Math.min(90,S.zoom||64));
+function clampChart(){const all=S.candles.length?S.candles:candlesFromTicks145();const max=Math.max(18,Math.min(200,all.length||200));S.zoom=Math.max(18,Math.min(max,S.zoom||64));S.pan=Math.max(0,Math.min(Math.max(0,(all.length||0)-S.zoom),S.pan||0));}
+function zoomBy(delta){S.zoom=(S.zoom||64)+delta;clampChart();draw();updateChartBadge();}
+$('zoomIn')?.addEventListener('click',()=>zoomBy(-10));
+$('zoomOut')?.addEventListener('click',()=>zoomBy(10));
+$('resetChart')?.addEventListener('click',()=>{S.zoom=Math.min(64,Math.max(18,S.candles.length||64));S.pan=0;draw();updateChartBadge();});
+const updateChartBadge146=updateChartBadge;
+updateChartBadge=function(text){if(text)return updateChartBadge146(text);const e=$('chartBadge');if(!e)return;const tf=document.querySelector('.tf.active')?.textContent||'1m';e.textContent=`${tf} · ${S.candles.length} velas · visibles ${Math.min(S.candles.length,Math.round(S.zoom||64))} · ${S.pan?'histórico':'en vivo'} · ${S.historyStatus}`;};
+// Redibujo continuo moderado para que la última vela no se quede visualmente atrás.
+setInterval(()=>{if(document.body.classList.contains('graph-mode')&&S.candles.length)draw()},1000);
