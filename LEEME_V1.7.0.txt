@@ -1,0 +1,20 @@
+RADAR SINTÉTICO MR V1.7.0 — RECONSTRUCCIÓN DEL GRÁFICO Y MOTOR DE ANTICIPACIÓN
+
+CAMBIOS IMPORTANTES
+1. El gráfico pasa a ser la vista principal: los paneles laterales ya no consumen espacio permanentemente.
+2. Las señales usan marcadores anclados a las velas: ALERTA, BUY/SELL, REBOTE y SALIDA.
+3. Las líneas quedan reservadas para OBJETIVO y STOP cuando existe una entrada/posición.
+4. Nuevo ciclo de señal: BUSCANDO → PRE-ALERTA → POSIBLE ENTRADA → ENTRAR AHORA → MANTENER → POSIBLE REBOTE → SALIR.
+5. Protección contra entradas tardías: si el movimiento ya recorrió demasiado, aparece “MOVIMIENTO YA EJECUTADO · ENTRADA BLOQUEADA”.
+6. La voz usa cola/prioridades y no debe interrumpir el mensaje inicial.
+7. Se agregó PWA: al instalar RADAR como aplicación se puede abrir sin la barra normal del navegador (según soporte del dispositivo/navegador).
+8. Modo REAL continúa bloqueado. Pruebas únicamente DEMO.
+
+PARA QUITAR LA BARRA SUPERIOR DEL NAVEGADOR
+- Publique todos los archivos del ZIP en GitHub Pages.
+- Abra RADAR en Chrome.
+- Pulse “INSTALAR APP” o use Chrome ⋮ > Instalar aplicación / Agregar a pantalla principal.
+- Abra RADAR desde el nuevo icono, no desde la pestaña normal del navegador.
+
+PRUEBA RECOMENDADA
+Grabe una prueba donde se vea el ciclo completo. Lo principal es comprobar que una PRE-ALERTA aparezca antes del movimiento y que, si el mercado ya se movió, RADAR bloquee la entrada tardía.
