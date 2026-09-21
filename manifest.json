@@ -1,9 +1,0 @@
-{
-  "name": "RADAR SINTÉTICO MR",
-  "short_name": "RADAR MR",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#08121e",
-  "theme_color": "#08121e",
-  "orientation": "landscape"
-}
