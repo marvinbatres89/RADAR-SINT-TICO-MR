@@ -1,0 +1,54 @@
+RADAR SINTÉTICO MR V1.8.0 · ESCÁNER MULTIMERCADO
+
+CAMBIO PRINCIPAL
+- RADAR vigila todos los mercados Boom y Crash al mismo tiempo con una sola conexión a Deriv.
+- Cada mercado tiene su propio motor y su propio ciclo: pre-alerta, entrada, seguimiento y salida.
+  Una señal en Boom 500 no se mezcla con lo que pasa en Crash 1000.
+- Nuevo panel "ESCÁNER MULTIMERCADO" en la vista RADAR: una tarjeta por mercado con estado,
+  dirección, porcentaje y ticks desde el último spike (⚡).
+  Orden: ENTRADA > CERCA DEL DISPARADOR > PRE-ALERTA > EN CURSO > ANALIZANDO.
+- Tocar una tarjeta cambia el mercado en vista (paneles y gráfico). No reinicia el análisis de
+  ningún mercado: al volver, su ciclo y sus marcadores siguen ahí.
+- En el gráfico, los otros mercados con PRE-ALERTA, CERCA o ENTRADA aparecen como botones en la
+  barra superior. Tocar uno abre ese mercado.
+- 💼 en una tarjeta indica que ese mercado tiene la operación demo abierta.
+
+VOZ
+- Mercado en vista: suenan los mismos avisos que antes (pre-alerta, entrada, rebote, salida).
+- Otros mercados: solo suenan entradas y salidas, diciendo el nombre del mercado:
+  "Entrada en Crash 500. Venta ahora." / "Salir ahora en Crash 500. OBJETIVO ALCANZADO".
+  Sus pre-alertas y avisos de rebote se ven en el escáner, sin voz, para no saturar.
+- Un aviso que espera más de 20 segundos en la cola se descarta: no suena desfasado.
+
+ESTADOS DEL ESCÁNER
+- 🟢 ENTRADA: entrada confirmada (se resalta 20 segundos).
+- 🟡 CERCA: el precio se acerca al disparador. Todavía no entrar.
+- 🟠 PRE-ALERTA: estructura en preparación.
+- 🔵 EN CURSO / 🟡 REBOTE / 🔵 SALIDA: seguimiento de una entrada del RADAR.
+- ⛔ TARDE: el movimiento ya ocurrió; RADAR no lo persigue.
+- ⏳ CARGANDO / ↻ REINTENTANDO / ⚠ SIN DATOS / ⚠ SIN TICKS: estado de la conexión de ese mercado.
+
+CORRECCIONES INCLUIDAS
+- La señal activa de un mercado solo se evalúa con los ticks de ese mismo mercado.
+- El detector de spikes ya no se traba cuando el historial llega a 1500 ticks.
+- Cambiar de mercado ya no borra los marcadores ni reinicia el ciclo.
+- Abrir una operación demo ya no vuelve a suscribir el mercado.
+- Se eliminó la función duplicada chooseDirection.
+- Una conexión anterior ya no puede marcar "DESCONECTADO" cuando la nueva ya está conectada.
+- Si la voz estaba apagada al conectar, ahora funciona apenas se enciende.
+- Los campos TP / SL no se sobrescriben mientras se están escribiendo.
+- Cerrar la operación demo ya no borra las líneas de la señal del mercado en vista.
+- Si Deriv rechaza una descarga (por ejemplo, por límite de peticiones), se reintenta hasta 3 veces.
+
+NOTAS
+- Para recibir los avisos, deje la app abierta y la pantalla encendida: Android puede pausar la
+  app cuando queda en segundo plano o con la pantalla apagada.
+- Los marcadores del gráfico siguen sin texto (gráfico limpio, igual que V1.7.4).
+- AUTO SEÑALES sigue sin ejecutar operaciones; queda para una próxima versión.
+
+ARCHIVOS
+Suba todos los archivos de este ZIP y reemplace los anteriores. service-worker.js cambió de
+versión (radar-mr-v180) para que el teléfono descargue los archivos nuevos.
+
+ATRIBUCIÓN
+Gráfico: Lightweight Charts™ de TradingView (https://www.tradingview.com/).
