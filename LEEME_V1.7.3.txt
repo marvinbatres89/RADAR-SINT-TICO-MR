@@ -1,0 +1,11 @@
+RADAR SINTÉTICO MR V1.7.3
+
+NUEVO: tercer motor algorítmico de confluencia.
+- Busca patrones históricos similares sobre el eje precio-tiempo usando secuencias de velas M1.
+- Evalúa múltiples estrategias y selecciona la de mayor puntuación contextual.
+- Usa confluencia de motor normal, spike, histórico y contexto multitemporal.
+- La evaluación histórica usa hasta 1000 velas M1 disponibles en la sesión y resultados posteriores de 6 velas.
+- El histórico es experimental y no representa una probabilidad garantizada.
+- El algoritmo no abre operaciones por sí solo: genera contexto para la pre-alerta/confirmación.
+
+OBJETIVO: mejorar anticipación sin perseguir movimientos ya ejecutados.
