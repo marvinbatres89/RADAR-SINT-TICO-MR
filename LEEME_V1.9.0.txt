@@ -1,0 +1,91 @@
+RADAR SINTÉTICO MR · V1.9.0 · MOTOR SPIKE + SIEMPRE ENCENDIDA
+================================================================
+
+CÓMO ACTUALIZAR
+- Suba TODOS los archivos de este ZIP a la raíz del repositorio (reemplazando los anteriores):
+  app.js, index.html, style.css, service-worker.js, manifest.json, icon-192.png, icon-512.png.
+- Espere 1 o 2 minutos y abra la app. Si todavía ve "V1.8.2", ciérrela por completo y vuelva a abrirla
+  (esta versión renueva la memoria de la app: radar-mr-v190).
+- MUY IMPORTANTE: abra RADAR desde el ICONO instalado en la pantalla de inicio, no desde un enlace de
+  Telegram o WhatsApp. Desde un enlace se abre en una pestaña con "X" arriba, y Android la cierra apenas
+  usted cambia de app. Para instalar: abra la página en Chrome → menú ⋮ → "Instalar aplicación" o
+  "Agregar a pantalla principal".
+
+
+1) SIEMPRE ENCENDIDA
+- El botón "Conectar Deriv" ahora es "⏻ Encender RADAR / ⏻ Apagar RADAR".
+  Una vez encendido, queda encendido hasta que usted lo apague: si cierra la app y la vuelve a abrir,
+  se enciende sola y se reconecta.
+- Si se corta internet o la conexión con Deriv, se reconecta sola (reintenta a 1, 2, 4, 8, 15 y 30 s)
+  sin perder el estado de los 14 mercados. Arriba se ve "RECONECTANDO" o "SIN INTERNET".
+- MEMORIA: se guardan en el teléfono la operación demo, las señales abiertas del RADAR, las operaciones
+  del motor spike, el historial, los marcadores del gráfico, los resultados y sus ajustes.
+- REVISIÓN DE LA PAUSA: al volver (reconexión o app reabierta), RADAR revisa los ticks de ese tiempo.
+  Si la demo o una señal tocó el OBJETIVO o el STOP mientras estaba en pausa, la cierra en ese punto,
+  con su resultado, y lo avisa ("durante la pausa de 10 min la demo tocó el OBJETIVO a las 02:15").
+  Si la pausa fue muy larga (más de ~80 min), usa las velas de 1 minuto.
+- PANTALLA ENCENDIDA: mientras RADAR está encendido y a la vista, el teléfono no apaga la pantalla.
+  Consejo: déjelo conectado al cargador.
+- 🌙 SEGUNDO PLANO (experimental, apagado de fábrica): reproduce un tono inaudible para que Chrome no
+  congele la app cuando usted usa otra app. Actívelo con el botón "🌙 Segundo plano".
+
+LÍMITE HONESTO: una app web no puede garantizar seguir funcionando con la pantalla apagada o mientras
+usa otra app; Android puede pausarla igual. Lo que sí garantiza esta versión es que al volver no se
+pierde nada y se revisa lo que pasó. Para sus operaciones REALES, ponga siempre TP y STOP en MT5:
+esos niveles los ejecuta el servidor del bróker aunque el teléfono esté apagado.
+
+
+2) MOTOR SPIKE (aparte de las entradas normales) · botón "⚡ Motor spike: ON/OFF"
+- Opera A FAVOR del spike: COMPRA en Boom, VENTA en Crash. Tiene su propio color (morado), marcadores
+  "⚡ SPIKE", líneas, voz y resultados.
+- ZONA DE SPIKE: preparación de spike de 70% o más. Solo es un aviso.
+- ENTRADA SPIKE: zona + el historial de ESE mercado confirma que, en condiciones como la actual, llegaron
+  más spikes que lo normal (×1.15 o más). Si el historial no lo confirma, el motor solo avisa la zona
+  y el panel lo dice: "sin ventaja histórica: solo aviso".
+- SALIDA: "¡Spike! Cerrar ahora" apenas llega el spike; "No llegó el spike. Salir" si vence la ventana
+  (35% del promedio de ticks entre spikes: 18 ticks en Boom 50, 175 en Boom 500, 350 en Boom 1000);
+  o en su STOP.
+- En el gráfico: ⚡ ENTRADA SPIKE, ⚡ STOP SPIKE y ⚡ TP SUGERIDO (60% de un spike típico), que puede
+  poner como TP en MT5 para que se cierre solo con el spike.
+- Mientras hay una operación spike en un mercado, las entradas normales de ese mercado esperan; y el motor
+  spike no entra donde usted o el RADAR ya tienen una operación.
+- Con el motor spike encendido, las pre-alertas "a favor del spike" del motor normal se desactivan
+  (en los videos casi nunca llegaban a entrada); ahora esas entradas son del motor spike.
+
+
+3) ANÁLISIS DE SPIKES POR MERCADO (en CONTROLES → MOTOR SPIKE)
+- Con las últimas 2000 velas de 1 minuto (~33 horas) de cada mercado, RADAR mide:
+  · el tamaño típico del spike y cada cuántos ticks llega en promedio;
+  · si con preparación alta llegaron más spikes al minuto siguiente que lo normal (el "×" de ventaja);
+  · si después de pasar el promedio de ticks sin spike llegaron más spikes que antes.
+- Esto responde con datos del propio mercado si esas señales anticipan el spike o no.
+- Se usa en los dos motores: el motor spike entra solo con ventaja histórica, y las entradas normales
+  en contra del spike (vender Boom / comprar Crash) se bloquean desde 70% de preparación (antes 75%)
+  y el RADAR avisa salir desde 75% (antes 80%) cuando el historial muestra más spikes en ese estado.
+
+
+4) 📊 RESULTADOS (tarjeta en la vista RADAR, guardada en el teléfono)
+- RADAR: señales, % ganadas y resultado en R (1 R = lo que se arriesgaba hasta el stop).
+- ⚡ SPIKE: intentos, spikes atrapados y cuántos se esperaban AL AZAR con esa ventana (~30% de los
+  intentos). Si con el tiempo los atrapados superan claramente a los esperados al azar, el análisis
+  está anticipando spikes de verdad; si quedan parecidos, no.
+- DEMO: operaciones, % ganadas y dólares con su lote. Botón "Reiniciar" para empezar a contar de nuevo.
+
+
+IMPORTANTE (HONESTIDAD)
+- Deriv dice que sus spikes llegan al azar con una frecuencia media fija. Si es así, ninguna señal puede
+  anticipar el momento del spike, y operar spikes o derivas da, en promedio, cerca de cero menos costos.
+  El análisis histórico y la tarjeta de resultados sirven justamente para comprobarlo con sus mercados.
+- En el simulador de pruebas (spikes al azar), el motor spike atrapó 36% contra 30% esperado al azar en
+  25 intentos (diferencia normal por casualidad) y el resultado total fue casi cero (−0.3 R).
+- Practique en DEMO hasta ver resultados propios en la tarjeta.
+
+
+AJUSTES (en app.js, al inicio)
+  CFG={...,spikeEngine:true,histGuard:true,persist:true}
+  SPK_ZONE=70  (zona de spike)      SPK_LIFT=1.15 (ventaja histórica mínima para entrar; 0 = no exigir ventaja)
+  SPK_WIN=.35  (ventana = 35% del promedio de ticks entre spikes)
+  SPIKE_BLOCK=75  SPIKE_EXIT=80  CONF_MIN_FAVOR=3
+
+Gráfico: Lightweight Charts™ de TradingView (https://www.tradingview.com/lightweight-charts/).
+Datos: Deriv (API pública).
