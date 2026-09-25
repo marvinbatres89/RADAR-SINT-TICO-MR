@@ -1,0 +1,110 @@
+RADAR SINTÉTICO MR · V1.8.1 · GRÁFICO DE SEÑALES + CONFLUENCIA
+================================================================
+
+CÓMO ACTUALIZAR
+- Suba TODOS los archivos de este ZIP a la raíz del repositorio (reemplazando los anteriores):
+  app.js, index.html, style.css, service-worker.js, manifest.json, icon-192.png, icon-512.png.
+- Espere 1 o 2 minutos y abra la app. Si todavía ve "V1.8.0", ciérrela por completo y vuelva a abrirla
+  (esta versión renueva la memoria de la app: radar-mr-v181).
+
+
+1) QUÉ MUESTRA AHORA EL GRÁFICO
+- PANEL (arriba a la izquierda), siempre del mercado que usted está viendo:
+  · Línea 1: el estado (PRE-ALERTA, POSIBLE ENTRADA, ENTRADA, EN OPERACIÓN, BLOQUEADA…).
+  · Línea 2: el plan. En pre-alerta: el disparador y cuánto falta para confirmar ("no entrar antes").
+    Con entrada: entrada, objetivo y stop. Con demo: P/L en puntos y en dólares.
+  · Línea 3: la PROYECCIÓN de 6 minutos (ver abajo) y, si la operación va en contra del spike,
+    cuánto se perdería con un spike típico de ese mercado.
+  · Línea 4: los votos: cuántas estrategias están a favor y en contra, el algoritmo, la preparación
+    de spike y ⚡ (ticks desde el último spike).
+  El color del panel cambia: naranja pre-alerta, amarillo cerca, verde entrada, celeste en operación,
+  rojo riesgo de spike, gris bloqueada o tarde.
+  Toque el panel para reducirlo a una sola línea; otro toque lo vuelve a abrir.
+- LÍNEAS DE PRECIO:
+  · Pre-alerta: DISPARADOR (naranja): la entrada solo se confirma si el precio lo toca.
+                INVALIDA (gris): si el precio llega ahí, la idea se cancela.
+  · Entrada u operación demo: ENTRADA (sólida), OBJETIVO (azul), STOP (naranja) y, si la operación
+    va en contra del spike, SI HAY SPIKE (roja): dónde quedaría el precio con un spike típico.
+    Esto muestra el riesgo real: en Boom/Crash el stop no protege de un spike.
+- MARCADORES: los últimos 4 eventos llevan texto corto (ALERTA ↑, ENTRADA ↓, DEMO BUY, REBOTE,
+  SALIDA +1.20, ⚠ SPIKE). Los anteriores quedan sin texto para que el gráfico no se llene.
+- PROYECCIÓN (línea morada punteada con su banda, en 1m y 5m): el camino promedio que siguió el
+  precio en los 6 minutos siguientes a los 8 patrones más parecidos del histórico (desde 40% de
+  parecido). El panel dice cuántos patrones usó y qué tan parecidos son; con menos de 50% la marca
+  como "débil". La banda muestra la dispersión: mientras más ancha, menos confiable.
+  Es un promedio estadístico de lo que pasó antes, no una garantía de lo que va a pasar.
+  La estrategia "Analogía histórica" sigue votando con su regla estricta (68% de parecido).
+- La leyenda y la nota del motor ya no tapan el eje de tiempo; "motor M1" ahora está en la esquina.
+
+
+2) TODAS LAS ESTRATEGIAS Y EL ALGORITMO VOTAN JUNTOS (CONFLUENCIA)
+- Votan las 10 estrategias: continuación de tendencia, ruptura de estructura, pullback, reversión RSI,
+  compresión + expansión, momentum, rechazo de rango, preparación de spike, analogía histórica y
+  confluencia multitemporal. Cuenta el voto de cada una que tenga dirección y al menos 40%.
+- Para dar una PRE-ALERTA hacen falta: al menos 3 estrategias a favor, más a favor que en contra,
+  y que el algoritmo no esté en contra con 55% o más.
+- Al tocar el disparador se vuelve a comprobar. Si ya no se cumple, la entrada se cancela
+  ("CANCELADA SIN CONFLUENCIA") en lugar de mandarle a entrar.
+- Si falta confluencia, el estado dice cuántas estrategias están a favor y en contra.
+- La columna CONFLUENCIA (debajo del gráfico) y la línea "Confluencia" del RADAR muestran el conteo.
+
+
+3) GUARDIA CONTRA SPIKES
+- Comprar Crash o vender Boom es operar EN CONTRA del spike.
+- Si la preparación de spike es 75% o más, el RADAR no da esa pre-alerta ("🛡 BLOQUEADA POR SPIKE").
+  Si en ese momento el motor de spike tiene su propia idea a favor del spike, se usa esa.
+- Si la preparación sube a 75% o más justo cuando el precio toca el disparador, la entrada se
+  bloquea ("BLOQUEADA POR SPIKE").
+- Con una señal del RADAR abierta en contra del spike y la preparación en 80% o más:
+  "SALIR AHORA · RIESGO DE SPIKE".
+- Con su operación demo abierta en contra del spike y la preparación en 80% o más: aviso por voz
+  UNA vez ("Riesgo de spike alto. Considere salir."), panel en rojo y marcador ⚠ SPIKE.
+  La demo no se cierra sola: usted decide.
+- Consecuencia: habrá MENOS entradas, sobre todo compras en Crash y ventas en Boom durante las
+  derivas largas. Esas entradas suelen aparecer poco después de un spike, cuando la preparación baja.
+
+
+4) EL RADAR SIGUE SU OPERACIÓN DEMO
+- Al abrir BUY o SELL, la pre-alerta de ese mercado se cierra y no habrá pre-alertas ni entradas
+  nuevas ahí mientras la demo esté abierta (antes repetía "ENTRAR AHORA" con la operación abierta).
+- El RADAR avisa rebote, pérdida de impulso ("CONSIDERE SALIR") y riesgo de spike, también cuando
+  ese mercado está en segundo plano (nombrando el mercado).
+- Al cerrar la demo, el estado pasa a "OPERACIÓN CERRADA" y el RADAR vuelve a analizar
+  (ya no queda pegado "OPERACIÓN ACTIVA").
+- Si se reconecta a Deriv con la demo abierta, el RADAR la vuelve a seguir.
+
+
+5) OTRAS CORRECCIONES DEL VIDEO DE PRUEBA
+- ENTRADA: durante 20 segundos muestra "🟢 ENTRADA · hace X s" con la distancia al precio de entrada
+  (y "ya se alejó, no perseguir" si corresponde), en lugar de saltar enseguida a MANTENER.
+- TARDE ahora es gris: ya no llena el escáner de rojo al conectar.
+- ⚡ (ticks desde el último spike) se conoce desde que conecta, usando el histórico.
+- P/L en puntos y en dólares con su lote.
+- En vertical, la vista del gráfico ahora cabe en la pantalla: antes quedaba cortada a la derecha
+  (incluido el eje de precios). La fila de estado pasa a 2 renglones y el P/L va debajo de los
+  botones. La cabecera ya no se amontona.
+- En el teléfono, el RADAR muestra si está conectado (arriba y en el escáner: "SIN CONEXIÓN").
+- La voz ya no lee precios con decimales: "Ejecutar ahora. Compra."
+
+
+6) P/L EN DÓLARES
+- Se calcula como puntos × lote × tamaño de contrato 1 (Boom/Crash en MT5).
+- Verifíquelo en su MT5: clic largo o derecho sobre el símbolo → Especificación → Tamaño del contrato.
+
+
+7) IMPORTANTE (HONESTIDAD)
+- Estas reglas cambian CUÁNDO avisa el RADAR; no garantizan ganancias.
+- Deriv genera los spikes al azar con una frecuencia media fija. Ningún indicador puede asegurar
+  el momento exacto del próximo spike.
+- La V1.9 (modo AUTO en DEMO + estadísticas por mercado y por regla) servirá para medir si estas
+  reglas mejoran el resultado real. Hasta entonces, practique en DEMO.
+
+
+8) AJUSTES (para quien quiera endurecer o suavizar las reglas)
+En app.js, al inicio:
+  CFG={confluence:true,spikeGuard:true,historySpikes:true,followDemo:true}   ← apagar/encender reglas
+  SPIKE_BLOCK=75   SPIKE_EXIT=80   CONF_MIN_FAVOR=3   CONF_MIN_SCORE=40   ALGO_VETO=55
+
+
+Gráfico: Lightweight Charts™ de TradingView (https://www.tradingview.com/lightweight-charts/).
+Datos: Deriv (API pública).
