@@ -1,0 +1,131 @@
+RADAR SINTÉTICO MR · V1.10.0 · MODOS + VARIAS OPERACIONES + MONTOS
+======================================================================
+
+CÓMO ACTUALIZAR
+---------------
+1. En GitHub (repositorio RADAR-SINT-TICO-MR): Add file → Upload files.
+2. Suba estos 8 archivos a la raíz, reemplazando los anteriores:
+   app.js · index.html · style.css · service-worker.js · manifest.json · icon-192.png · icon-512.png · LEEME_V1.10.0.txt
+3. Commit changes. Espere 1–2 minutos.
+4. Abra RADAR y ciérrela por completo una vez para que cargue la versión nueva
+   (arriba debe decir V1.10.0).
+
+IMPORTANTE: ÁBRALA COMO APLICACIÓN, NO COMO PESTAÑA
+----------------------------------------------------
+En el video del 25/09 RADAR estaba abierta desde un enlace (con una "X" arriba).
+Así es una pestaña y Android la cierra cuando usted cambia de app.
+Ahora, si está abierta como pestaña, aparece un aviso naranja arriba:
+   ⋮ → «Abrir en Chrome» → ⋮ → «Instalar aplicación» (o «Agregar a pantalla principal»).
+Después ábrala siempre desde el ícono de RADAR.
+
+1. BOTÓN «BUSCAR»: NORMALES / SPIKES / AMBOS
+--------------------------------------------
+Está en la pantalla RADAR y también en la barra del gráfico (📈 NORMAL · ⚡ SPIKE · AMBOS).
+Vale para TODOS los mercados y queda guardado en el teléfono.
+ • 📈 Normales: solo subidas y bajadas normales (pre-alerta → entrada → salida).
+   El motor spike no marca zonas ni entra.
+ • ⚡ Spikes: solo el motor spike. No hay pre-alertas ni entradas normales en
+   ningún mercado; las pre-alertas abiertas se cancelan al cambiar.
+ • Ambos: los dos motores, como antes.
+
+2. VARIAS OPERACIONES A LA VEZ
+------------------------------
+ • Puede abrir una operación demo en CADA mercado, todas al mismo tiempo.
+   Ya no aparece "Ya existe una operación activa en…".
+   Si ya tiene una en ese mismo mercado, se lo dice por voz.
+ • Tarjeta nueva «💼 OPERACIONES ABIERTAS» (pantalla RADAR y cajón CONTROLES):
+   mercado, BUY/SELL, ganancia o pérdida en $, TP y SL en $, lote y total.
+   Toque una fila para verla en el gráfico; «Cerrar» la cierra.
+ • La barra de abajo del gráfico muestra la operación del mercado en vista y
+   «💼+2 −$0.83» = las otras operaciones. Tóquela para pasar a la siguiente.
+ • SALIR cierra la operación del mercado que está viendo.
+ • El escáner marca con 💼 cada mercado con operación.
+ • Al comprar un Boom o vender un Crash (a favor del spike) en modo Spikes o Ambos,
+   la operación usa el plan de spike: TP ≈ 60% de un spike típico, stop más allá
+   de lo que la deriva recorre y una VENTANA con cuenta regresiva (⏱). Si la ventana
+   vence sin spike, RADAR avisa «Considere salir».
+
+MODO AUTO (demo)
+ • Controles → «🤖 AUTO (abre demos solo)». Cada ENTRADA del RADAR y cada
+   entrada del motor spike abre sola una demo en ese mercado (marcada 🤖) y
+   se cierra sola con la salida de esa señal. Solo en demo.
+
+3. MONTOS EN DÓLARES
+--------------------
+ • Las líneas del gráfico dicen cuánto gana o pierde:
+   «OBJETIVO +$2.83», «STOP −$1.42», «SI HAY SPIKE −$6.13», «⚡ TP SUGERIDO +$…».
+ • Al arrastrar TP o SL, el monto cambia en vivo.
+ • Cálculo: puntos × lote (lote 0.20 → 10 puntos = $2.00). Se usa el lote con el
+   que abrió esa operación; si no hay operación, el lote que está escrito en LOTE.
+ • El panel del gráfico, la barra, la lista y el historial también muestran $.
+
+4. PROBABILIDADES
+-----------------
+Cada vez que hay una operación, una entrada o una pre-alerta, RADAR simula 400
+caminos con el comportamiento real de ESE mercado (deriva, ruido y spikes al ritmo
+de Deriv) y muestra, por ejemplo:
+   Prob.: objetivo 52% · stop 48% (por spike 21%) · sin tocar en 4 min 20%
+ • «por spike» = la parte del stop que vendría de un spike en contra.
+ • Se recalcula al mover TP/SL.
+ • Una venta de Boom o compra de Crash NO se pre-alerta si la probabilidad de que un
+   spike la saque antes del objetivo pasa de 35% (queda «🛡 BLOQUEADA POR SPIKE»).
+Pruebas en el simulador (784 planes al azar, 2 semillas): predijo objetivo 38–39%
+y ocurrió 37–39%; stop por spike 18% y ocurrió 16–18%.
+
+5. ¿CUÁNDO LLEGA EL SPIKE? (respuesta honesta)
+----------------------------------------------
+Deriv genera los spikes AL AZAR: en promedio 1 cada N ticks (Boom 1000 = 1 cada
+1000 ticks). Nadie puede saber el segundo exacto: ni RADAR, ni un indicador, ni un
+curso. Lo que sí se puede saber, y RADAR ahora muestra:
+ • «próximo minuto 5.8%» (probabilidad de spike en el siguiente minuto),
+ • «la mitad llega antes de 12 min · 9 de 10 antes de 38 min»,
+ • en una operación spike: cuenta regresiva de la ventana y la probabilidad de que
+   el spike llegue en lo que queda.
+En el simulador, la probabilidad por minuto predicha fue 22.0% y los minutos con
+spike fueron 21.3% y 23.0%.
+Antes la columna SPIKE decía «Spike 86%»: eso era la "preparación", no una
+probabilidad. Ahora dice «5.8%/min».
+
+6. VENTAJA MEDIDA (cuándo entra el motor spike)
+-----------------------------------------------
+En el video 9 de 14 mercados decían «⚡ ZONA SPIKE» al mismo tiempo: esa zona no
+anticipaba nada. Ahora el motor spike solo entra si los datos de ESE mercado
+muestran una ventaja clara:
+ • Historial (2000 velas M1): con preparación alta hubo más spikes que lo normal
+   (×1.15 o más y z ≥ 3), o
+ • Balance 33 h: sostener a favor del spike ganó de forma clara (t ≥ 3).
+Si no hay ventaja, el escáner dice «⚡ SIN VENTAJA» y RADAR solo informa las
+probabilidades. En 84 pruebas con mercados justos hubo 0 ventajas falsas; con un
+mercado donde los spikes sí ganaban, la detectó en 10 de 14.
+Una compra/venta normal en contra de un balance claro queda
+«⚪ SIN VENTAJA EN LOS DATOS».
+
+LÍMITE HONESTO
+--------------
+Si Deriv equilibra la deriva con los spikes (lo normal), ninguna regla gana a la
+larga: el resultado promedio es cercano a cero menos costos. En el simulador justo,
+el modo AUTO con entradas normales terminó en pérdida (14 ganadas de 41 en 40 min). RADAR
+sirve para decidir con números (cuánto arriesga, cuánto busca, qué probabilidad
+tiene), no garantiza ganancias. Pruebe siempre en DEMO.
+
+AJUSTES (al inicio de app.js)
+-----------------------------
+ EDGE_T=3          fuerza mínima (t / z) para decir que hay ventaja
+ EXPOSURE_MAX=.35  máximo de probabilidad de que un spike saque una operación en contra
+ MC_PATHS=400      caminos simulados por cálculo
+ MC_MAX_TICKS=1800 horizonte de la simulación (ticks)
+ MC_W=.25          cuánto pesa la deriva de los últimos 300 ticks (el resto: deriva justa)
+ CFG.modes / multi / money / mc = false apaga cada novedad de V1.10.
+
+PRUEBAS
+-------
+ • Con las novedades apagadas, los 10 mercados dan exactamente los mismos 174
+   eventos que la versión base (0 diferencias).
+ • Modo Spikes: 30 min sin ninguna entrada normal; modo Normales: sin zonas ni
+   entradas spike; el modo queda guardado.
+ • 3 operaciones a la vez, montos = puntos × lote, cerrar desde la lista, SALIR,
+   TP/SL, reabrir la app (siguen abiertas con su lote) y migración de la demo
+   guardada por V1.9. Si una operación toca su stop o su objetivo mientras la app
+   está cerrada, al volver lo avisa («REVISIÓN DE PAUSA»).
+ • AUTO: cada salida cierra su demo (hasta 7 demos a la vez en 40 min).
+ • Pantalla vertical y horizontal sin errores y sin desbordes a lo ancho.
