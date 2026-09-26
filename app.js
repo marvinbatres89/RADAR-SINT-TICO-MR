@@ -152,7 +152,7 @@ function connectDeriv() {
   ws = new WebSocket(DERIV_WS_URL);
 
   ws.onopen = () => {
-    document.getElementById('conn.className') = 'pill on';
+    document.getElementById('conn').className = 'pill on';
     document.getElementById('conn').textContent = '● CONECTADO';
     document.getElementById('connect').textContent = '⏻ Apagar RADAR';
     document.getElementById('scanCount').textContent = '8 MERCADOS VIGILADOS';
@@ -212,7 +212,6 @@ function handleDerivMessage(data) {
     const diff = price - lastPrice;
     lastPrice = price;
 
-    // Detect spike (sudden large price jump characteristic of Boom/Crash)
     const isSpike = Math.abs(diff) > 1.5;
     if (isSpike) {
       ticksSinceLastSpike = 0;
@@ -247,7 +246,6 @@ function updateLiveUI(price, diff, isSpike) {
   document.getElementById('direction').textContent = dir;
   document.getElementById('graphDir').textContent = dir;
 
-  // Space-Time Motor calculation
   const speedScore = Math.min(100, Math.round((ticksSinceLastSpike / 20) * 100));
   document.getElementById('normalEngine').textContent = `Magnitud: ${Math.abs(diff).toFixed(2)}`;
   document.getElementById('spikeEngine').textContent = `Velocidad T/S: ${ticksSinceLastSpike} ticks`;
