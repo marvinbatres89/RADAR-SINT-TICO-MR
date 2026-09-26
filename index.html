@@ -14,7 +14,7 @@
 </head>
 <body>
 <header class="topbar">
-  <div class="brand"><span class="logo">◎</span><div><b>RADAR SINTÉTICO MR</b><small>V1.9.0 · MOTOR SPIKE + SIEMPRE ENCENDIDA</small></div></div>
+  <div class="brand"><span class="logo">◎</span><div><b>RADAR SINTÉTICO MR</b><small>V1.9.0 · MOTOR ESPACIO-TIEMPO + SPIKE</small></div></div>
   <nav>
     <button class="nav active" data-view="radar">RADAR</button>
     <button class="nav" data-view="graph">GRÁFICO</button>
@@ -69,9 +69,9 @@
     <article class="card">
       <h2 id="liveTitle">Mercado en vivo</h2>
       <div class="stats"><div><small>Precio</small><b id="price">—</b></div><div><small>Ticks</small><b id="ticks">0</b></div><div><small>Dirección</small><b id="direction">NEUTRAL</b></div></div>
-      <h3>Diagnóstico del motor</h3>
+      <h3>Diagnóstico del motor (Espacio-Tiempo)</h3>
       <div id="timingState" class="timing waiting">ESPERANDO ESTRUCTURA</div>
-      <div id="indicators" class="mono">EMA: —<br>RSI: —<br>ATR: —<br>Compresión: —</div>
+      <div id="indicators" class="mono">EMA: —<br>RSI: —<br>ATR: —<br>Velocidad T/S: —</div>
     </article>
   </div>
 </section>
@@ -132,13 +132,13 @@
     <div class="drawer-card"><small>MOTIVO</small><p id="graphReason">Esperando datos.</p></div>
     <div class="drawer-grid">
       <div><small>Precio</small><b id="graphPrice">—</b></div><div><small>Objetivo</small><b id="graphTarget">—</b></div>
-      <div><small>Stop</small><b id="graphStop">—</b></div><div><small>Timing</small><b id="graphTiming">—</b></div>
+      <div><small>Stop</small><b id="graphStop">—</b></div><div><small> Timing (Espacio-Tiempo)</small><b id="graphTiming">—</b></div>
       <div><small>Spike</small><b id="graphSpikeSignal">—</b></div><div><small>Modo</small><b id="graphExecMode">MANUAL</b></div>
     </div>
-    <h3>DOBLE MOTOR</h3>
+    <h3>MOTOR ESPACIO-TIEMPO + SPIKE</h3>
     <div class="engine-grid">
-      <div><small>MOVIMIENTO NORMAL</small><b id="normalEngine">—</b></div>
-      <div><small>SPIKE</small><b id="spikeEngine">—</b></div>
+      <div><small>MAGNITUD (EJE Y)</small><b id="normalEngine">—</b></div>
+      <div><small>VELOCIDAD (EJE X)</small><b id="spikeEngine">—</b></div>
       <div><small>TICKS DESDE SPIKE</small><b id="ticksSinceSpike">—</b></div>
       <div><small>PREPARACIÓN</small><b id="prepState">—</b></div>
     </div>
@@ -151,7 +151,8 @@
       <div><small>DIRECCIÓN ALGORÍTMICA</small><b id="algoDir">—</b></div>
       <div><small>CONFLUENCIA</small><b id="algoConfluence">—</b></div>
     </div>
-    <div class="drawer-card"><small>GRÁFICO</small><p>OHLC directo de Deriv. Muestra el disparador de la pre-alerta, la entrada, el objetivo, el stop, dónde quedaría el precio si llega un spike en contra y la proyección de 6 minutos de las analogías históricas.</p></div><div class="drawer-card"><small>PATRÓN HISTÓRICO</small><p id="historicalPattern">Buscando patrones similares en el historial disponible…</p></div>
+    <div class="drawer-card"><small>GRÁFICO</small><p>OHLC directo de Deriv con Eje Espacio-Tiempo. Muestra disparador, entrada, objetivo, stop y proyección de analogías históricas.</p></div>
+    <div class="drawer-card"><small>PATRÓN HISTÓRICO</small><p id="historicalPattern">Buscando patrones similares en el historial disponible…</p></div>
     <div class="drawer-card"><small>ESTRATEGIAS EVALUADAS</small><p id="strategyScores" class="mono">—</p></div>
 
     <h3>POSICIÓN DEMO</h3>
@@ -160,11 +161,9 @@
       <label>TP <input id="tpInput" type="number" step="0.00001"></label>
       <label>SL <input id="slInput" type="number" step="0.00001"></label>
       <button id="applyLevels">APLICAR TP / SL</button>
-      <small>También puede arrastrar las líneas TP y SL directamente en el gráfico.</small>
     </div>
     <h3>REGLA PRINCIPAL</h3>
-    <p class="drawer-note">Si el movimiento ya recorrió demasiado antes del disparador, RADAR lo marca como <b>MOVIMIENTO YA EJECUTADO</b> y no genera entrada tardía.</p>
-    <p class="drawer-note">Cada pre-alerta y cada entrada necesitan <b>al menos 3 estrategias a favor</b>, más a favor que en contra y el algoritmo sin votar en contra. Comprar Crash o vender Boom se bloquea con la preparación de spike desde 75%; con una operación abierta, desde 80% avisa salir.</p>
+    <p class="drawer-note">El Motor Espacio-Tiempo calcula simultáneamente la magnitud del precio (desplazamiento vertical) y la velocidad de los ticks (avance horizontal) para evitar falsas entradas y filtrar con máxima precisión los spikes.</p>
   </aside>
   <div id="drawerBackdrop" class="drawer-backdrop"></div>
 </section>
