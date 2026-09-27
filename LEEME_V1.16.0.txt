@@ -1,0 +1,86 @@
+RADAR SINTÉTICO MR · V1.16.0 · EL SPIKE YA NO ENTRA CONTRA EL ALGORITMO
+======================================================================
+
+QUÉ SE VIO EN SU VIDEO
+-------------------------
+Usted pidió enfocarse en el análisis de las entradas porque estaban fallando, y tenía razón. Viendo el
+video con calma encontré el patrón exacto: en Boom 600 el motor abrió y sostuvo una COMPRA (spike) durante
+más de un minuto y medio mientras el cuadro de la propia operación mostraba "Algo 82% ↓" a "Algo 85% ↓"
+(el Algoritmo marcando, cada vez con más fuerza, que el movimiento correcto era VENDER) y la Confluencia
+en "2/10 ↑ (4 en contra)" — más estrategias en contra que a favor. La probabilidad de llegar al objetivo,
+que el propio RADAR calcula, bajó de 17% a 7% mientras la operación seguía abierta. Lo mismo pasó minutos
+después con Boom 300: compra sostenida con el Algoritmo en 79-81% en contra.
+
+No fue casualidad ni un solo caso: en el resumen que su mismo video mostró al final, de 33 intentos de
+spike solo 9 se "atraparon" (27%), cuando por puro azar se esperaban 9.9. Es decir, el motor de spike
+estaba acertando IGUAL o PEOR que adivinar — la propia bitácora de honestidad de RADAR ya se lo estaba
+diciendo.
+
+LA CAUSA
+----------
+Desde la V1.8.1, el motor NORMAL (movimientos normales, no spikes) exige que las estrategias y el
+Algoritmo estén de acuerdo antes de confirmar una entrada: si el Algoritmo se opone con fuerza, la entrada
+se cancela. El motor de SPIKE nunca tuvo ese mismo filtro. Decide su dirección solo con la deriva propia
+de cada mercado (para qué lado tiende a irse) y la confirma con su propio cálculo de probabilidades — pero
+nunca cruza esa decisión con lo que dice el Algoritmo ni con la Confluencia, aunque ambos ya se calculan y
+se le muestran a usted en pantalla en cada operación. Por eso podía (y, según su video, sí estaba) entrar
+justo en contra de lo que el resto de RADAR ya sabía.
+
+EL ARREGLO
+------------
+Antes de abrir una operación de spike, ahora se revisa el mismo veto que ya usa el motor normal: si el
+Algoritmo se opone con fuerza (55% o más) a la dirección que el spike quiere tomar, la entrada no sale
+todavía. El motor lo vuelve a intentar en el siguiente instante; en cuanto el Algoritmo deje de oponerse
+—o si nunca se opuso— la entrada sale con total normalidad. No se tocó la deriva, el Monte Carlo, el
+tamaño del spike ni ningún otro cálculo: solo se agregó este cruce que faltaba.
+
+QUÉ TAN SEGURO ES ESTE CAMBIO
+--------------------------------
+Antes de tocar nada medí el motor de spike en un mercado JUSTO (sin ninguna ventaja real, dos semillas
+distintas) y en uno CON ventaja real, con la misma prueba que ya usamos para la V1.12:
+ • Mercado justo, semilla 1: antes +0.108R · después +0.048R
+ • Mercado justo, semilla 2: antes -0.060R · después +0.049R
+ • Mercado con ventaja real: antes +0.847R (n=277) · después +0.847R (n=277) — SIN CAMBIO
+
+Antes, las dos semillas del mercado justo daban resultados bien distintos entre sí (uno positivo, el otro
+negativo) — eso es ruido, no ventaja real. Ahora las dos dan casi el mismo número pequeño, que es
+justamente lo esperable cuando NO hay ventaja verdadera: más parejo, más honesto. Y en el mercado donde SÍ
+hay una tendencia real, el resultado no cambió ni un decimal, porque ahí el Algoritmo casi nunca se opone
+a la tendencia real — así que ese caso no pierde nada de fuerza.
+
+También hice una prueba aparte, aislada: mismo mercado, mismo precio, mismo instante — con el Algoritmo
+puesto a propósito 90% en contra, la operación NO se abre; con el Algoritmo neutral, se abre igual que
+siempre. Y confirmé que las 174 pruebas de siempre (con todo lo nuevo apagado) y las de la voz y el
+gráfico de versiones pasadas siguen exactamente iguales.
+
+SEAMOS REALISTAS
+-------------------
+Esto quita un patrón concreto y ya confirmado: entrar justo en contra de lo que el propio RADAR sabía.
+No es una promesa de que ahora todo spike va a acertar — adivinar el momento exacto de un spike sigue
+siendo, por diseño, difícil (Deriv los genera al azar). Si después de esta actualización sigue viendo
+entradas que le parezcan raras, mándeme el video igual que esta vez: entre más casos concretos vea, más
+puedo afinar esto.
+
+CÓMO ACTUALIZAR
+----------------
+1. En GitHub (repositorio RADAR-SINT-TICO-MR): Add file → Upload files.
+2. Suba estos 8 archivos a la raíz, reemplazando los anteriores:
+   app.js · index.html · style.css · service-worker.js · manifest.json ·
+   icon-192.png · icon-512.png · LEEME_V1.16.0.txt
+3. Commit changes. Espere 2–3 minutos.
+4. Abra RADAR: como ya se actualiza sola, basta con cerrarla del todo y
+   abrirla de nuevo. Arriba debe decir v1.16.0.
+
+AJUSTES NUEVOS
+----------------
+Ninguno visible. Por dentro hay un interruptor (encendido por defecto) para poder apagar este cruce si
+hiciera falta comparar, pero no hay nada que usted necesite tocar.
+
+PRUEBAS
+--------
+ • Con las novedades de siempre apagadas: los 10 mercados dan los mismos 174 eventos de base (0 diferencias).
+ • Prueba nueva y aislada: con el Algoritmo 90% en contra no abre; con el Algoritmo neutral sí abre —
+   mismo mercado, mismo precio, mismo instante.
+ • Motor spike en mercado justo (dos semillas) y con ventaja real: números arriba. El mercado con ventaja
+   real no perdió nada; el mercado justo quedó más parejo y honesto entre semillas.
+ • Se repitieron las pruebas del gráfico (V1.13) y de la voz (V1.14): siguen funcionando igual.
