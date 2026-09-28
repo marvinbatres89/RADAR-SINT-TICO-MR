@@ -1,0 +1,97 @@
+RADAR SINTÉTICO MR · V1.18.0 · EL VETO Y EL CIERRE YA NO MIRAN SOLO AL ALGORITMO, MIRAN TODO EL ANÁLISIS
+============================================================================================================
+
+QUÉ SE VIO EN SU VIDEO
+-------------------------
+Usted ya estaba probando la V1.17.0 (la del cierre automático) y pidió mejorar las predicciones y el
+análisis. En el video se ve el nuevo cierre automático funcionando de verdad: en Crash 1000 el motor de
+spike abrió una VENTA justo cuando el mercado arrancaba una subida fuerte y prolongada, y minutos después
+la operación se cerró sola con la marca "ANÁLISIS EN CONTRA" (antes decía "ALGORITMO EN CONTRA") — usted
+mismo señaló esa marca en el video.
+
+Mirando el detalle encontré algo importante: durante TODO ese tiempo, la Confluencia mostró "2/10 ↓ · 4 en
+contra" — es decir, más estrategias en contra que a favor — desde muy temprano, mucho antes de que el
+Algoritmo (el puntaje general) también se pusiera en contra. Ni la puerta de entrada (V1.16) ni el cierre
+por sostenido (V1.17) miraban ese conteo de estrategias: los dos solo revisaban el puntaje general del
+Algoritmo. La operación terminó cerrándose sola igual, pero tardó más de lo necesario porque tuvo que
+esperar a que el Algoritmo también se pusiera en contra — la Confluencia ya lo venía avisando desde antes.
+
+LA CAUSA
+----------
+"El Algoritmo" y "la Confluencia" (el conteo de estrategias a favor y en contra) son dos cosas separadas
+que RADAR ya calcula. El motor normal, desde la V1.8.1, exige que las DOS estén de acuerdo. El motor de
+spike, incluso después de la V1.16 y la V1.17, seguía revisando solo una de las dos: el Algoritmo. Podía
+haber más estrategias en contra que a favor y aun así abrir o mantener una operación, mientras el Algoritmo
+general no llegara al 55% en contra.
+
+EL ARREGLO
+------------
+Ahora, tanto la puerta de entrada del spike como el cierre por sostenido revisan las DOS cosas: se bloquea
+o se cierra si el Algoritmo está claramente en contra (igual que antes) O si son más las estrategias en
+contra que a favor, aunque el Algoritmo todavía no llegue al 55%. Una aclaración importante: NO le exigí al
+motor de spike el mínimo de 3 estrategias a favor que sí exige el motor normal, porque el de spike decide
+por la deriva propia de cada mercado, no por acumular votos técnicos, y exigirle ese mínimo lo habría dejado
+casi sin poder operar nunca. Solo pedí que, de las estrategias que sí opinan, no sean más las que están en
+contra que las que están a favor.
+
+Con este cambio, un caso como el de Crash 1000 se frena o se cierra por la Confluencia sola, sin tener que
+esperar a que el Algoritmo también se ponga en contra. La marca en pantalla y en la bitácora ahora dice
+"ANÁLISIS EN CONTRA" en vez de "ALGORITMO EN CONTRA", porque ya no es solo el Algoritmo el que puede
+activarla.
+
+QUÉ TAN SEGURO ES ESTE CAMBIO
+--------------------------------
+Repetí la prueba de honestidad de los spikes (mercado justo con dos semillas, mercado con ventaja real) y
+comparé antes y después de este cambio:
+ • Mercado justo, semilla 1: antes n=160 · +0.048R · t 0.6 — después n=120 · -0.013R · t -0.1
+ • Mercado justo, semilla 2: antes n=150 · +0.049R · t 0.6 — después n=130 · -0.005R · t -0.1
+ • Mercado con ventaja real: antes n=277 · +0.847R · t 5.8 — después n=271 · +0.903R · t 5.9
+
+Lectura de estos números: en el mercado SIN ventaja real, el resultado promedio bajó de un pequeño positivo
+a prácticamente cero (que es justo lo honesto cuando no hay ventaja de verdad) y las dos semillas quedaron
+todavía más parecidas entre sí. En el mercado CON ventaja real, casi no se perdieron operaciones (de 277 a
+271) y el resultado promedio, si acaso, mejoró un poco — el filtro nuevo casi no le quita fuerza a un caso
+donde sí hay una tendencia real, porque ahí el Algoritmo y las estrategias rara vez se oponen a la vez.
+
+También hice una prueba nueva y aislada, con una lista de estrategias real (no vacía) para poder controlar
+el conteo a favor/en contra por separado del Algoritmo (que dejé en neutral a propósito):
+ • 2 estrategias a favor y 4 en contra, Algoritmo neutral: la entrada del spike NO se abre.
+ • 4 a favor y 2 en contra, Algoritmo neutral: la entrada SÍ se abre con normalidad.
+ • Una operación ya abierta, superada en número (2 a favor/4 en contra) sostenido: sigue abierta antes de
+   los 25 s, se cierra sola al pasar los 25 s — sin que el Algoritmo tenga que oponerse también.
+Y confirmé que las 174 pruebas de base, las del gráfico, la voz y las pruebas anteriores del veto y el
+cierre siguen exactamente iguales.
+
+SEAMOS REALISTAS
+-------------------
+El motor de spike ahora entra con más cuidado, así que va a tomar ALGUNAS operaciones menos que antes (lo
+medí: entre un 15% y un 25% menos en un mercado sin ventaja clara). Eso es intencional: son justo las
+operaciones más discutidas entre las propias estrategias de RADAR, las que más convenía dejar pasar. Como
+siempre, si con el uso ve algo que no cuadra, mándeme el video: eso fue exactamente lo que permitió encontrar
+y cerrar esta vuelta.
+
+CÓMO ACTUALIZAR
+----------------
+1. En GitHub (repositorio RADAR-SINT-TICO-MR): Add file → Upload files.
+2. Suba estos 8 archivos a la raíz, reemplazando los anteriores:
+   app.js · index.html · style.css · service-worker.js · manifest.json ·
+   icon-192.png · icon-512.png · LEEME_V1.18.0.txt
+3. Commit changes. Espere 2–3 minutos.
+4. Abra RADAR: como ya se actualiza sola, basta con cerrarla del todo y
+   abrirla de nuevo. Arriba debe decir v1.18.0.
+
+AJUSTES NUEVOS
+----------------
+Ninguno visible: usa los mismos interruptores de la V1.16.0/V1.17.0, ya activados. Lo único que cambia en
+pantalla es el texto de la marca cuando se activa: ahora dice "ANÁLISIS EN CONTRA".
+
+PRUEBAS
+--------
+ • Con las novedades de siempre apagadas: los 10 mercados dan los mismos 174 eventos de base (0 diferencias).
+ • Prueba nueva y aislada de estrategias superadas en número (independiente del Algoritmo): bloquea la
+   entrada, permite la entrada cuando hay más a favor, y cierra una operación ya abierta tras 25 s
+   sostenidos — las tres cosas confirmadas.
+ • Prueba de honestidad de los spikes (mercado justo × 2 semillas, mercado con ventaja real): números arriba;
+   más honesto en el mercado justo, sin pérdida de fuerza en el mercado con ventaja real.
+ • Se repitieron las pruebas del gráfico (V1.13), la voz (V1.14), el veto de spike (V1.16) y el cierre por
+   sostenido (V1.17): siguen funcionando igual.
