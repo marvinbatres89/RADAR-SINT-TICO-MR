@@ -1,0 +1,85 @@
+RADAR SINTÉTICO MR · V1.17.0 · SI EL ALGORITMO GIRA EN CONTRA, LA OPERACIÓN SE CIERRA SOLA
+============================================================================================
+
+QUÉ SE VIO EN SU VIDEO
+-------------------------
+En el video de "mejoremos los motores de búsqueda de entradas confiables" encontré dos cosas:
+
+Lo bueno primero: el arreglo de la V1.16.0 ya está funcionando. En Crash 600 se ve una zona de spike
+hacia abajo con el Algoritmo marcando 84% hacia ARRIBA (en contra) y la herramienta la deja en
+"🛡️ BLOQUEADA" — exactamente para eso se hizo ese cambio.
+
+Lo nuevo: una operación de Boom 500 (compra) que entró bien — al momento de entrar, la confluencia era
+4/10 a favor y 3 en contra, correcta — pero que YA ABIERTA quedó viendo cómo el Algoritmo giraba cada vez
+más en contra: 80% → 83% → 86%, mientras la pérdida crecía sin parar (de -$0.07 hasta más de -$0.34 en el
+tramo que alcancé a ver). La herramienta ya calculaba y mostraba esos números en vivo, en la cajita de
+arriba del gráfico, pero no hacía nada con ellos.
+
+LA CAUSA
+----------
+La Confluencia y el Algoritmo solo se revisaban en la PUERTA de entrada (eso fue lo que arregló la V1.16.0
+para el motor de spike). Una vez que una operación ya estaba abierta —del motor normal, del motor de spike,
+o abierta a mano— nada volvía a mirarlos. Podían pasar de estar a favor a estar fuertemente en contra sin
+que la herramienta reaccionara: se quedaba esperando el objetivo o el stop, nada más.
+
+EL ARREGLO
+------------
+Le pregunté cómo quería que reaccionara la herramienta ante esto, y usted eligió que se cerrara sola.
+Así quedó: mientras una operación demo está abierta, si el Algoritmo se pone claramente en contra de esa
+dirección (score 55% o más — el mismo umbral que ya se usa en la puerta de entrada) y se mantiene así
+de forma sostenida durante 25 segundos seguidos, la operación se cierra sola para cortar la pérdida, con
+aviso por voz ("el algoritmo giró en contra, cerrando por seguridad") y su propia línea en la bitácora
+("ALGORITMO EN CONTRA"). Si el Algoritmo deja de oponerse antes de cumplirse esos 25 segundos, el conteo
+se reinicia y la operación sigue su curso normal hacia el objetivo o el stop — para no cerrar por un
+parpadeo momentáneo. Esto aplica igual a una operación del motor normal, una de spike, o una que usted
+abra a mano.
+
+QUÉ TAN SEGURO ES ESTE CAMBIO
+--------------------------------
+Hice una prueba nueva y aislada que fuerza el Algoritmo en contra y mide el reloj exacto:
+ • Con el Algoritmo en contra sostenido menos de 25 s: la operación sigue abierta (correcto).
+ • Pasados los 25 s sostenidos: se cierra sola (correcto).
+ • Si el Algoritmo deja de oponerse antes de los 25 s y luego vuelve a ponerse en contra: el conteo se
+   reinicia en vez de sumarse — no cierra antes de tiempo (correcto).
+ • Probé el cierre por separado en una operación del motor de spike y en una del motor normal: en ambas
+   se cierra la operación real Y se limpia el estado interno correspondiente, para que no quede un
+   "fantasma" en pantalla como si la operación siguiera abierta.
+También repetí la prueba de honestidad de los spikes (mercado justo con dos semillas, mercado con ventaja
+real) y los números salieron IGUAL que con la V1.16.0 — este cambio no distorsiona esa medición porque el
+Algoritmo rara vez se sostiene en contra en esos escenarios de prueba en particular. Y confirmé que las
+174 pruebas de siempre (con todo lo nuevo apagado) y las del gráfico y la voz de versiones pasadas siguen
+exactamente iguales.
+
+SEAMOS REALISTAS
+-------------------
+Cerrar antes de tiempo corta pérdidas que iban creciendo, pero también corta alguna operación que, de
+haberse quedado, habría terminado ganando — eso no se puede eliminar del todo, es el costo de protegerse.
+Los 25 segundos y el 55% son un punto de partida razonable a partir de lo que vi en su video, no un número
+mágico: si con el uso ve que cierra demasiado pronto (o demasiado tarde), mándeme el video y lo ajustamos
+con evidencia real, igual que las veces anteriores.
+
+CÓMO ACTUALIZAR
+----------------
+1. En GitHub (repositorio RADAR-SINT-TICO-MR): Add file → Upload files.
+2. Suba estos 8 archivos a la raíz, reemplazando los anteriores:
+   app.js · index.html · style.css · service-worker.js · manifest.json ·
+   icon-192.png · icon-512.png · LEEME_V1.17.0.txt
+3. Commit changes. Espere 2–3 minutos.
+4. Abra RADAR: como ya se actualiza sola, basta con cerrarla del todo y
+   abrirla de nuevo. Arriba debe decir v1.17.0.
+
+AJUSTES NUEVOS
+----------------
+Ninguno visible: este cierre automático viene ya activado, tal como usted pidió. No hay nada que tenga
+que tocar ni prender.
+
+PRUEBAS
+--------
+ • Con las novedades de siempre apagadas: los 10 mercados dan los mismos 174 eventos de base (0 diferencias).
+ • Prueba nueva y aislada del cierre por Algoritmo: sostenido < 25 s no cierra · sostenido > 25 s sí cierra ·
+   una interrupción a tiempo reinicia el conteo · el cierre funciona y limpia el estado tanto en una
+   operación de spike como en una del motor normal.
+ • Prueba de honestidad de los spikes (mercado justo × 2 semillas, mercado con ventaja real): mismos
+   números que con la V1.16.0, sin distorsión.
+ • Se repitieron las pruebas del gráfico (V1.13), de la voz (V1.14) y del veto de spike (V1.16): siguen
+   funcionando igual.

@@ -1,0 +1,16 @@
+{
+  "name": "RADAR SINTÉTICO MR",
+  "short_name": "RADAR MR",
+  "id": "radar-sintetico-mr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display_override": ["fullscreen", "standalone"],
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#07111d",
+  "theme_color": "#07111d",
+  "icons": [
+    {"src":"icon-192.png","sizes":"192x192","type":"image/png"},
+    {"src":"icon-512.png","sizes":"512x512","type":"image/png"}
+  ]
+}
