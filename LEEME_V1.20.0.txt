@@ -1,0 +1,54 @@
+RADAR SINTÉTICO MR · V1.20.0 · TABLA DE TEMPORALIDADES (+ incluye todo lo de la V1.19.0)
+========================================================================================
+
+Esta versión trae dos cambios: el de la V1.19.0 (riesgo parejo en AUTO) y la tabla de temporalidades que
+usted pidió con el video de referencia. Si no subió la V1.19.0, no importa: esta ya la incluye.
+
+1) RIESGO PAREJO EN AUTO (V1.19.0)
+------------------------------------
+En su video, SPIKE iba casi en tablas medido en R (13 intentos, -0.5 R) pero DEMO iba en -$33.34. La causa era
+el tamaño: con el mismo lote, tocar el stop costaba $1.52 en Boom 1000 y $13.77 en Boom 500. Ahora, en AUTO,
+el lote se calcula para que el stop cueste siempre lo que usted ponga en "RIESGO POR OPERACIÓN AUTO $"
+(por defecto $1.00). Lo manual sigue con su LOTE. Se puede volver a "mismo lote" en el selector.
+
+2) TABLA DE TEMPORALIDADES (V1.20.0)
+--------------------------------------
+Como en la referencia que mandó: en el panel RADAR hay una tarjeta nueva, "TEMPORALIDADES", con 1M · 3M · 5M ·
+15M · 30M · 1H del mercado que está viendo. Cada fila dice SUBE / BAJA / ESPERE con una barra de fuerza, y arriba
+un resumen: ALINEADO ↑, ALINEADO ↓ o MIXTO. En el gráfico, el cuadro "TEMPORALIDADES" muestra el resumen y cómo
+van 15M, 30M y 1H.
+
+Usted eligió "tabla + filtro". Antes de encender el filtro lo medí, porque un filtro que suena bien puede quitar
+las buenas entradas. Con el filtro apagado, revisé cómo salieron las operaciones según cómo estaban 15M · 30M · 1H
+al momento de entrar, en 6 escenarios simulados:
+ • Entradas NORMALES: las que entraron con las temporalidades mayores en contra salieron peor en los 5
+   escenarios con datos (en conjunto ≈ -0.36R, contra ≈ +0.14R de las demás). → El filtro queda ACTIVO: una
+   entrada normal ya no sale si 15M · 30M · 1H van mayoritariamente en contra.
+ • Entradas de SPIKE: el filtro NO ayuda — en el mercado con rachas, los spikes que iban "contra las
+   temporalidades" fueron los MEJORES (+0.66R, contra +0.03R). Tiene sentido: el spike siempre va contra la
+   deriva del mercado, y la deriva es justamente lo que las temporalidades muestran. Filtrarlos quitaría los
+   buenos. → Para spikes, la tabla es solo información.
+
+SEAMOS REALISTAS
+-------------------
+Es un filtro que mejora la calidad promedio de las entradas normales en las pruebas, no una garantía: va a haber
+entradas alineadas que pierdan. Y lo que más operaba en sus videos es el motor de spike, que depende del momento
+del spike (al azar por diseño de Deriv), así que no espere que esto solo cambie el resultado del día. Lo que sí
+cambia con la V1.19.0 es que ahora el resultado en $ refleja de verdad la calidad de las entradas.
+Recomendado: después de actualizar, toque "Reiniciar" en RESULTADOS y mida con al menos 50 operaciones.
+
+CÓMO ACTUALIZAR
+----------------
+1. En GitHub (repositorio RADAR-SINT-TICO-MR): Add file → Upload files.
+2. Suba estos 8 archivos a la raíz, reemplazando los anteriores:
+   app.js · index.html · style.css · service-worker.js · manifest.json · icon-192.png · icon-512.png · LEEME_V1.20.0.txt
+3. Commit changes. Espere 2–3 minutos. Cierre RADAR del todo y ábrala: arriba debe decir v1.20.0.
+
+PRUEBAS
+--------
+ • Tabla con datos reales del simulador; el filtro frena una compra con 15M/30M en BAJA y deja pasar la venta; con
+   el filtro apagado la misma entrada sí se confirma.
+ • Riesgo parejo: el stop cuesta lo elegido en mercados con stops 240 veces distintos; manual no cambia.
+ • Con todo lo nuevo apagado, los 174 eventos de base siguen idénticos.
+ • Siguen pasando las pruebas del gráfico, la voz, el veto y la confluencia del spike, el cierre por análisis en
+   contra, las multi-operaciones y la bitácora.
